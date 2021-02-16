@@ -5,7 +5,7 @@ Inserting "timbres" data for the musicological database
 
 ## Tâches à réaliser
 
-- [ ] Reproduire le modèle de la base sur Directus
+- [ ] Reproduire le modèle de la base sur _Directus_
   * [Adresse de l'interface _Directus_](http://bases-iremus.huma-num.fr/timbres/admin/login)
 
 - [ ] Ecrire un script python permettant :
