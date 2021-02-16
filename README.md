@@ -7,6 +7,8 @@ Inserting "timbres" data for the musicological database
 
 - [ ] Reproduire le modèle de la base sur _Directus_
   * [Adresse de l'interface _Directus_](http://bases-iremus.huma-num.fr/timbres/admin/login)
+  
+- [ ] "Normaliser" les noms des champs de chaque table 
 
 - [ ] Ecrire un script python permettant :
   * de générer un token d'identification et de se log sur le projet _Directus_ "Timbres";
