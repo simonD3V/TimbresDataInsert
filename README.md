@@ -10,6 +10,8 @@ Inserting "timbres" data for the musicological database
   
 - [ ] _Normaliser_ les noms des champs de chaque table
 
+- [ ] Mettre à jour [la feuille de calcul temporaire](https://docs.google.com/spreadsheets/d/1NA8yjzQz-Q-OSUN7rLpyAC3FK2KHK5r_/edit#gid=808619991)
+
 - [ ] Ecrire un script python permettant :
   * de générer un token d'identification et de se log sur le projet _Directus_ "Timbres";
   * d'insérer les données via l'API de Directus;
