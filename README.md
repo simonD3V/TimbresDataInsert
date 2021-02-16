@@ -13,5 +13,5 @@ Inserting "timbres" data for the musicological database
 - [ ] Ecrire un script python permettant :
   * de générer un token d'identification et de se log sur le projet _Directus_ "Timbres";
   * d'insérer les données via l'API de Directus;
-  * de sauvegarder l'id et l'uuid des nouvelles données insérées en format YAML.
+  * de sauvegarder l'id et l'uuid des nouvelles données insérées dans un document YAML.
 
