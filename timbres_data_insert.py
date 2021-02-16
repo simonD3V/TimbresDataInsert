@@ -36,12 +36,12 @@ if __name__ == "__main__":
         "curl -X POST -H 'Content-Type: application/json' --data '%s' %s/auth/login" % (auth_json, url))
     
     token = str(json.loads(token_request)['data']['refresh_token'])
-    # token captured
-    print('\ntoken : ' + token)
-
+    
     # insertion test theme
 
     uuid_test = uuid.uuid4()
     theme = '{"id" : "%s", "theme" : "antoine", "type" : "patronyme", "textes_publies" : null }' % (uuid_test)
     insertion_theme = os.system("curl -X POST -H 'Content-Type: application/json' --data '%s' %s/items/themes? access_token=%s" % (theme, url, token))
     
+
+
