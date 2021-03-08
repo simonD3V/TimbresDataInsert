@@ -17,3 +17,4 @@ Insertion des données timbres dans la base de données
   * d'insérer les données via l'API de Directus;
   * de sauvegarder l'id et l'uuid des nouvelles données insérées dans un document YAML.
 
+- Demander à Alice de normaliser les identifiants des airs (234 et *234)
