@@ -72,27 +72,32 @@ def insert_data_simple_table(excel_path, simple_table, url, token, id_uuid_files
     insertion_airs = os.system(
         "curl -X POST -H 'Content-Type: application/json' --data '%s' %s/items/airs? access_token=%s" % (json_str, url, token))
 
-def update_uuid_yaml(id_object, simple_table, id_uuid_files) :
+def update_uuid_yaml(id_object, simple_table, id_uuid_files):
 
-    # en développement 
+    # en développement
     # (la fonction devra être insérée dans le test des colonnes id dans insert_data_simple_table() )
+
+    yaml = YAML(typ='safe')
+    yaml.preserve_quotes = True
+    yaml.indent = 5
+    yaml.block_seq_indent = 2
 
     # chargement du fichier
     with open(id_uuid_files) as file:
-        data_yaml = yaml.load(file, Loader=yaml.FullLoader)
-    
-    # on souhaite créer une nouvelle uuid à l'id 3 si elle n'existe pas 
-    try :
-        data_yaml[simple_table][id_object]
+        data_yaml = yaml.load(file)
+
+   # on souhaite créer une nouvelle uuid à l'id 3 si elle n'existe pas
+    try:
+        print(data_yaml[simple_table][id_object])
         print(str(id_object) + ' existe')
-        
-    except :
+
+    except:
         # l'id n'a pas été enregistrée, on lui créé une uuid et on rajoute le couple dans le .yaml
         print(str(id_object) + " n'existe pas")
         new_uuid = uuid.uuid4()
-        print(new_uuid)
-        new_line = [{simple_table:{id_object:str(new_uuid)}}]
+        new_line = [{simple_table: {id_object: str(new_uuid)}}]
         print(new_line)
+        data_yaml[simple_table][len(data_yaml[simple_table])].append(str(simple_table) + ':' + str(new_uuid))
         # update_yaml = yaml.dump(new_line, file, default_flow_style=False)
 
 
