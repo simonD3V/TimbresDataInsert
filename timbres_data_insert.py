@@ -94,17 +94,18 @@ def update_uuid_yaml(id_object, simple_table, id_uuid_files):
         # l'id n'a pas été enregistrée, on lui créé une uuid et on rajoute le couple dans le .yaml
         print(str(id_object) + " n'existe pas")
         new_uuid = uuid.uuid4()
-        new_line = [{simple_table: {id_object: str(new_uuid)}}]
+        new_line = {id_object: str(new_uuid)}
         print(new_line)
 
+        data_yaml[simple_table].append(new_line)
+
         # test modification ligne 1
-        data_yaml[simple_table][1] = 'test'
-        yaml.dump(data_yaml, sys.stdout)
+        # data_yaml[simple_table][1] = 'test'
+        # yaml.dump(data_yaml, sys.stdout)
         
         with open(id_uuid_files, 'w') as fo:
             yaml.dump(data_yaml, fo)
         # update_yaml = yaml.dump(new_line, file, default_flow_style=False)
-
 
 
 # ----------MAIN----------------------
