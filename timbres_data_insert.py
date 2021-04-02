@@ -2,6 +2,7 @@
 
 import yaml
 import os
+import sys
 import subprocess
 from subprocess import call
 import json
@@ -9,6 +10,7 @@ import uuid
 import xlrd
 # from yaml_functions import *
 from ruamel.yaml import YAML
+
 
 # ---------FUNCTIONS------------------
 
@@ -44,7 +46,7 @@ def listeAttribut(sheet, table_name):
 
 
 def insert_data_simple_table(excel_path, simple_table, url, token, id_uuid_files):
-    
+
     # essai test pour les airs
     book = xlrd.open_workbook(excel_path)
     sheet = book.sheet_by_name(simple_table[0])
@@ -54,17 +56,22 @@ def insert_data_simple_table(excel_path, simple_table, url, token, id_uuid_files
     for row in range(1, sheet.nrows):
         json_str = ''.join([json_str, '{'])
         for col in range(sheet.ncols):
-            # if col = 'id'
-                # id = sheet.cell(row, col).value
-                # update_uuid_yaml(id, simple_table[0], id_uuid_files) 
+            if (sheet.cell(0, col).value == 'id') :
+                id_value = sheet.cell(row, col).value
+                print(id_value)
+                uuid = update_uuid_yaml(int(id_value), simple_table[0], id_uuid_files)
+
+
+
+
             if (isinstance(sheet.cell(row, col).value, str)):
                 json_str = ''.join([json_str, '"%s" : "%s",' % (
-                    # cellules très modifiées 
+                    # cellules très modifiées
                     airs_col[col], str(sheet.cell(row, col).value.replace('"', '\'').replace('(', '').replace(')', '').replace("'", ' ')))])
             else:
                 json_str = ''.join([json_str, '"%s" : "%s",' % (
                     airs_col[col], str(sheet.cell(row, col).value))])
-            if (col == sheet.ncols-1):  
+            if (col == sheet.ncols-1):
                 json_str = json_str[:-1]
                 json_str = ''.join([json_str, '},'])
     json_str = json_str[:-1]
@@ -72,6 +79,7 @@ def insert_data_simple_table(excel_path, simple_table, url, token, id_uuid_files
     print(json_str)
     insertion_airs = os.system(
         "curl -X POST -H 'Content-Type: application/json' --data '%s' %s/items/airs? access_token=%s" % (json_str, url, token))
+
 
 def update_uuid_yaml(id_object, simple_table, id_uuid_files):
 
@@ -87,24 +95,19 @@ def update_uuid_yaml(id_object, simple_table, id_uuid_files):
 
    # on souhaite créer une nouvelle uuid à l'id 3 si elle n'existe pas
     try:
-        print(data_yaml[simple_table][id_object])
+        data_yaml[simple_table][id_object]
         print(str(id_object) + ' existe')
 
     except:
         # l'id n'a pas été enregistrée, on lui créé une uuid et on rajoute le couple dans le .yaml
         print(str(id_object) + " n'existe pas")
+        
         new_uuid = uuid.uuid4()
         new_line = {id_object: str(new_uuid)}
-        print(new_line)
-
         data_yaml[simple_table].append(new_line)
-
-        # test modification ligne 1
-        # data_yaml[simple_table][1] = 'test'
-        # yaml.dump(data_yaml, sys.stdout)
-        
         with open(id_uuid_files, 'w') as fo:
             yaml.dump(data_yaml, fo)
+        return data_yaml[simple_table][id_object]
         # update_yaml = yaml.dump(new_line, file, default_flow_style=False)
 
 
@@ -138,14 +141,15 @@ if __name__ == "__main__":
     # insérer les données des tables dites "simples" (qui ne sont pas celles de jointures)
     simple_table = sheet_names[:5]
 
-    update_uuid_yaml(3, simple_table[0], id_uuid_files) 
+    # update_uuid_yaml(3, simple_table[0], id_uuid_files)
 
-
-    #insert_data_simple_table(excel_path, simple_table, url, token, id_uuid_files)
+    insert_data_simple_table(excel_path, simple_table, url, token, id_uuid_files)
 
     # insertion test theme
     # uuid_test1 = uuid.uuid4()
+    # print(uuid_test1)
     # uuid_test2 = uuid.uuid4()
+    # print(uuid_test2)
     # theme = '[{"id" : "%s", "theme" : "antoine", "type" : "patronyme", "textes_publies" : null }, {"id" : "%s", "theme" : "simon", "type" : "patronyme", "textes_publies" : null }]' % (
     #     uuid_test1, uuid_test2)
     # insertion_theme = os.system(
