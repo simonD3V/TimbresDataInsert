@@ -7,6 +7,7 @@ from subprocess import call
 import json
 import uuid
 import xlrd
+from yaml_functions import *
 
 # ---------FUNCTIONS------------------
 
@@ -41,7 +42,8 @@ def listeAttribut(sheet, table_name):
     return a
 
 
-def insert_data_simple_table(excel_path, simple_table, url, token):
+def insert_data_simple_table(excel_path, simple_table, url, token, id_uuid_files):
+    
     # essai test pour les airs
     book = xlrd.open_workbook(excel_path)
     sheet = book.sheet_by_name(simple_table[0])
@@ -51,6 +53,9 @@ def insert_data_simple_table(excel_path, simple_table, url, token):
     for row in range(1, sheet.nrows):
         json_str = ''.join([json_str, '{'])
         for col in range(sheet.ncols):
+            # if col = 'id'
+                # id = sheet.cell(row, col).value
+                # update_uuid_yaml(id, simple_table[0], id_uuid_files) 
             if (isinstance(sheet.cell(row, col).value, str)):
                 json_str = ''.join([json_str, '"%s" : "%s",' % (
                     # cellules très modifiées 
@@ -66,6 +71,27 @@ def insert_data_simple_table(excel_path, simple_table, url, token):
     print(json_str)
     insertion_airs = os.system(
         "curl -X POST -H 'Content-Type: application/json' --data '%s' %s/items/airs? access_token=%s" % (json_str, url, token))
+
+def update_uuid_yaml(id_object, simple_table, id_uuid_files) :
+
+    # en développement 
+    # (la fonction devra être insérée dans le test des colonnes id dans insert_data_simple_table() )
+
+    # chargement du fichier
+    with open(id_uuid_files) as file:
+        data_yaml = yaml.load(file, Loader=yaml.FullLoader)
+    
+    # on souhaite créer une nouvelle uuid à l'id 3 si elle n'existe pas 
+    try :
+        print(data_yaml[simple_table][id_object])
+        
+    except :
+        # l'id n'a pas été enregistrée, on lui créé une uuid et on rajoute le couple dans le .yaml
+
+        new_uuid = uuid.uuid4()
+        new_line = [{simple_table:{id_object:new_uuid}}]
+        print(new_line)
+        # update_yaml = yaml.dump(new_line, file, default_flow_style=False)
 
 
 # ----------MAIN----------------------
@@ -93,14 +119,15 @@ if __name__ == "__main__":
                    'exemplaires_références_externes'
                    ]
 
-    id_uuid_files = 'timbres_data_insert.yml'
-
-    # insérer les nouvelles données qui n'étaient pas dans le fichier uuid_data.yml
-    # update_id_uuid_files(excel_path, id_uuid_files)
+    id_uuid_files = 'uuid_data.yml'
 
     # insérer les données des tables dites "simples" (qui ne sont pas celles de jointures)
     simple_table = sheet_names[:5]
-    insert_data_simple_table(excel_path, simple_table, url, token)
+
+    update_uuid_yaml(3, simple_table[0], id_uuid_files) 
+
+
+    #insert_data_simple_table(excel_path, simple_table, url, token, id_uuid_files)
 
     # insertion test theme
     # uuid_test1 = uuid.uuid4()
