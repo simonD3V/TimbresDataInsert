@@ -78,10 +78,8 @@ def update_uuid_yaml(id_object, simple_table, id_uuid_files):
     # en développement
     # (la fonction devra être insérée dans le test des colonnes id dans insert_data_simple_table() )
 
-    yaml = YAML(typ='safe')
+    yaml = YAML(typ='rt')
     yaml.preserve_quotes = True
-    yaml.indent = 5
-    yaml.block_seq_indent = 2
 
     # chargement du fichier
     with open(id_uuid_files) as file:
@@ -98,8 +96,15 @@ def update_uuid_yaml(id_object, simple_table, id_uuid_files):
         new_uuid = uuid.uuid4()
         new_line = [{simple_table: {id_object: str(new_uuid)}}]
         print(new_line)
-        data_yaml[simple_table][len(data_yaml[simple_table])].append(str(simple_table) + ':' + str(new_uuid))
+
+        # test modification ligne 1
+        data_yaml[simple_table][1] = 'test'
+        yaml.dump(data_yaml, sys.stdout)
+        
+        with open(id_uuid_files, 'w') as fo:
+            yaml.dump(data_yaml, fo)
         # update_yaml = yaml.dump(new_line, file, default_flow_style=False)
+
 
 
 # ----------MAIN----------------------
