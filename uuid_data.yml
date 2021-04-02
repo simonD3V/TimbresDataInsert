@@ -1,8 +1,7 @@
 # Liste des couples ID/UUID de chaque table
 
 airs:
-- 1: test
-- 2: 661d8500-8015-4834-9e85-b1bf05df849e
+-
 textes_publies:
 - 1: 6349600a-95c7-4d31-9329-6e33e0b62b39
 - 2: 72b5441a-e959-4133-a887-d1cf313c03f3
