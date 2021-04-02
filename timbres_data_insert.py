@@ -83,11 +83,12 @@ def update_uuid_yaml(id_object, simple_table, id_uuid_files) :
     
     # on souhaite créer une nouvelle uuid à l'id 3 si elle n'existe pas 
     try :
-        print(data_yaml[simple_table][id_object])
+        data_yaml[simple_table][id_object]
+        print(str(id_object) + ' existe')
         
     except :
         # l'id n'a pas été enregistrée, on lui créé une uuid et on rajoute le couple dans le .yaml
-
+        print(str(id_object) + " n'existe pas")
         new_uuid = uuid.uuid4()
         new_line = [{simple_table:{id_object:new_uuid}}]
         print(new_line)
