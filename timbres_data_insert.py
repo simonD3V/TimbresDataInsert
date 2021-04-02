@@ -7,7 +7,8 @@ from subprocess import call
 import json
 import uuid
 import xlrd
-from yaml_functions import *
+# from yaml_functions import *
+from ruamel.yaml import YAML
 
 # ---------FUNCTIONS------------------
 
