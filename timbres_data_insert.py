@@ -45,7 +45,6 @@ def listeAttribut(sheet, table_name):
     return a
 
 
-
 def insert_data_simple_table(excel_path, simple_table, url, token, id_uuid_files):
 
     # essai test pour les airs
@@ -54,29 +53,31 @@ def insert_data_simple_table(excel_path, simple_table, url, token, id_uuid_files
 
     airs_col = listeAttribut(sheet, simple_table[0])
     json_str = '['
+    # json_str = ''
     for row in range(1, sheet.nrows):
         json_str = ''.join([json_str, '{'])
         for col in range(sheet.ncols):
             if (sheet.cell(0, col).value == 'id'):
                 id_value = sheet.cell(row, col).value
-                print(id_value+1)
-                uuid = update_uuid_yaml(int(id_value), simple_table[0], id_uuid_files)
+                uuid = update_uuid_yaml(
+                    int(id_value), simple_table[0], id_uuid_files)
                 print(uuid)
-                json_str = ''.join([json_str, '"%s" : "%s",' % (airs_col[col], uuid)])
+                json_str = ''.join(
+                    [json_str, '"%s" : "%s",' % (airs_col[col], uuid)])
             elif (isinstance(sheet.cell(row, col).value, str)):
-                json_str=''.join([json_str, '"%s" : "%s",' % (
+                json_str = ''.join([json_str, '"%s" : "%s",' % (
                     # cellules très modifiées
                     airs_col[col], str(sheet.cell(row, col).value.replace('"', '\'').replace('(', '').replace(')', '').replace("'", ' ')))])
             else:
-                json_str=''.join([json_str, '"%s" : "%s",' % (
+                json_str = ''.join([json_str, '"%s" : "%s",' % (
                     airs_col[col], str(sheet.cell(row, col).value))])
             if (col == sheet.ncols-1):
-                json_str=json_str[:-1]
-                json_str=''.join([json_str, '},'])
-    json_str=json_str[:-1]
-    json_str=''.join([json_str, ']'])
+                json_str = json_str[:-1]
+                json_str = ''.join([json_str, '},'])
+    json_str = json_str[:-1]
+    json_str = ''.join([json_str, ']'])
     print(json_str)
-    insertion_airs=os.system(
+    insertion_airs = os.system(
         "curl -X POST -H 'Content-Type: application/json' --data '%s' %s/items/airs? access_token=%s" % (json_str, url, token))
 
 
@@ -85,29 +86,29 @@ def update_uuid_yaml(id_object, simple_table, id_uuid_files):
     # en développement
     # (la fonction devra être insérée dans le test des colonnes id dans insert_data_simple_table() )
 
-    yaml=YAML(typ='rt')
-    yaml.preserve_quotes=True
+    yaml = YAML(typ='rt')
+    yaml.preserve_quotes = True
 
     # chargement du fichier
     with open(id_uuid_files) as file:
-        data_yaml=yaml.load(file)
+        data_yaml = yaml.load(file)
 
    # on souhaite créer une nouvelle uuid à l'id 3 si elle n'existe pas
     try:
         data_yaml[simple_table][id_object]
         print(str(id_object) + ' existe')
+        return (data_yaml[simple_table][id_object][0])
 
     except:
         # l'id n'a pas été enregistrée, on lui créé une uuid et on rajoute le couple dans le .yaml
         print(str(id_object) + " n'existe pas")
 
-        new_uuid=uuid.uuid4()
-        new_line={id_object: str(new_uuid)}
+        new_uuid = uuid.uuid4()
+        new_line = {id_object: str(new_uuid)}
         data_yaml[simple_table].append(new_line)
         with open(id_uuid_files, 'w') as fo:
             yaml.dump(data_yaml, fo)
         return new_uuid
-        # update_yaml = yaml.dump(new_line, file, default_flow_style=False)
 
 
 # ----------MAIN----------------------
@@ -142,14 +143,15 @@ if __name__ == "__main__":
 
     # update_uuid_yaml(3, simple_table[0], id_uuid_files)
 
-    insert_data_simple_table(excel_path, simple_table, url, token, id_uuid_files)
-
+    insert_data_simple_table(excel_path, simple_table,url, token, id_uuid_files)
+    
     # insertion test theme
-    # uuid_test1 = uuid.uuid4()
-    # print(uuid_test1)
+    # uuid_test1 = '6bf6137e-239e-40c9-a723-6e9aa168c90d'
+    # print(str(uuid_test1))
     # uuid_test2 = uuid.uuid4()
     # print(uuid_test2)
-    # theme = '[{"id" : "%s", "theme" : "antoine", "type" : "patronyme", "textes_publies" : null }, {"id" : "%s", "theme" : "simon", "type" : "patronyme", "textes_publies" : null }]' % (
-    #     uuid_test1, uuid_test2)
+    # theme = '[{"id" : "%s", "theme" : "antoine", "type" : "patronyme"}, {"id" : "%s", "theme" : "simon", "type" : "patronyme"}]' % (
+    #     str(uuid_test1), str(uuid_test2))
+    # print(theme)
     # insertion_theme = os.system(
     #     "curl -X POST -H 'Content-Type: application/json' --data '%s' %s/items/themes? access_token=%s" % (theme, url, token))
