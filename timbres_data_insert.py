@@ -45,42 +45,6 @@ def listeAttribut(sheet, table_name):
     return a
 
 
-def insert_data_simple_table(excel_path, simple_table, url, token, id_uuid_files):
-
-    # essai test pour les airs
-    book = xlrd.open_workbook(excel_path)
-    sheet = book.sheet_by_name(simple_table[0])
-
-    airs_col = listeAttribut(sheet, simple_table[0])
-    json_str = '['
-    # json_str = ''
-    for row in range(1, sheet.nrows):
-        json_str = ''.join([json_str, '{'])
-        for col in range(sheet.ncols):
-            if (sheet.cell(0, col).value == 'id'):
-                id_value = sheet.cell(row, col).value
-                uuid = update_uuid_yaml(
-                    int(id_value), simple_table[0], id_uuid_files)
-                print(uuid)
-                json_str = ''.join(
-                    [json_str, '"%s" : "%s",' % (airs_col[col], uuid)])
-            elif (isinstance(sheet.cell(row, col).value, str)):
-                json_str = ''.join([json_str, '"%s" : "%s",' % (
-                    # cellules très modifiées
-                    airs_col[col], str(sheet.cell(row, col).value.replace('"', '\'').replace('(', '').replace(')', '').replace("'", ' ')))])
-            else:
-                json_str = ''.join([json_str, '"%s" : "%s",' % (
-                    airs_col[col], str(sheet.cell(row, col).value))])
-            if (col == sheet.ncols-1):
-                json_str = json_str[:-1]
-                json_str = ''.join([json_str, '},'])
-    json_str = json_str[:-1]
-    json_str = ''.join([json_str, ']'])
-    print(json_str)
-    insertion_airs = os.system(
-        "curl -X POST -H 'Content-Type: application/json' --data '%s' %s/items/airs? access_token=%s" % (json_str, url, token))
-
-
 def update_uuid_yaml(id_object, simple_table, id_uuid_files):
 
     # en développement
@@ -97,12 +61,11 @@ def update_uuid_yaml(id_object, simple_table, id_uuid_files):
     try:
         data_yaml[simple_table][id_object]
         print(str(id_object) + ' existe')
-        return (data_yaml[simple_table][id_object][0])
+        return(next(iter(data_yaml[simple_table][id_object].values())))
 
     except:
         # l'id n'a pas été enregistrée, on lui créé une uuid et on rajoute le couple dans le .yaml
         print(str(id_object) + " n'existe pas")
-
         new_uuid = uuid.uuid4()
         new_line = {id_object: str(new_uuid)}
         data_yaml[simple_table].append(new_line)
