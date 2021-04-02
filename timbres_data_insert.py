@@ -95,8 +95,8 @@ def update_uuid_yaml(id_object, simple_table, id_uuid_files):
     with open(id_uuid_files) as file:
         data_yaml = yaml.load(file)
 
-   # on souhaite créer une nouvelle uuid à l'id 3 si elle n'existe pas
     try:
+        # l'id existe déjà
         data_yaml[simple_table][id_object]
         print(str(id_object) + ' existe')
         return(next(iter(data_yaml[simple_table][id_object].values())))
