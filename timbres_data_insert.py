@@ -60,7 +60,7 @@ def insert_data_simple_table(excel_path, simple_table, url, token, id_uuid_files
                 id_value = sheet.cell(row, col).value
                 uuid = update_uuid_yaml(
                     int(id_value), simple_table[0], id_uuid_files)
-                print(uuid)
+                # print(uuid)
                 json_str = ''.join(
                     [json_str, '"%s" : "%s",' % (airs_col[col], uuid)])
 
@@ -78,7 +78,7 @@ def insert_data_simple_table(excel_path, simple_table, url, token, id_uuid_files
                 json_str = ''.join([json_str, '},'])
     json_str = json_str[:-1]
     json_str = ''.join([json_str, ']'])
-    print(json_str)
+    # print(json_str)
     insertion_airs = os.system(
         "curl -X POST -H 'Content-Type: application/json' --data '%s' %s/items/airs? access_token=%s" % (json_str, url, token))
 
@@ -95,15 +95,15 @@ def update_uuid_yaml(id_object, simple_table, id_uuid_files):
     with open(id_uuid_files) as file:
         data_yaml = yaml.load(file)
 
+   # on souhaite créer une nouvelle uuid à l'id 3 si elle n'existe pas
     try:
-        # l'id existe déjà
         data_yaml[simple_table][id_object]
-        print(str(id_object) + ' existe')
+        print(simple_table + ' : ' + str(id_object) + ' existe')
         return(next(iter(data_yaml[simple_table][id_object].values())))
 
     except:
         # l'id n'a pas été enregistrée, on lui créé une uuid et on rajoute le couple dans le .yaml
-        print(str(id_object) + " n'existe pas")
+        print(simple_table + ' : ' +  str(id_object) + " n'existe pas")
         new_uuid = uuid.uuid4()
         new_line = {id_object: str(new_uuid)}
         data_yaml[simple_table].append(new_line)
@@ -120,7 +120,13 @@ if __name__ == "__main__":
     url = 'http://bases-iremus.huma-num.fr/timbres'
 
     token = token_generation(email, pwd, url)
-    print(token)
+    print("        ________________________")
+    print("        |                      |")
+    print("        |      Insertion       |") 
+    print("        |     des données      |") 
+    print("        |                      |")
+    print("        ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾")
+    print("Connexion à l'API de Directus | Token : " + token)
 
     # mettre à jour les couples ID/UUID
 
@@ -142,10 +148,8 @@ if __name__ == "__main__":
     # insérer les données des tables dites "simples" (qui ne sont pas celles de jointures)
     simple_table = sheet_names[:5]
 
-    # update_uuid_yaml(3, simple_table[0], id_uuid_files)
-
     insert_data_simple_table(excel_path, simple_table,url, token, id_uuid_files)
-    
+
     # insertion test theme
     # uuid_test1 = '6bf6137e-239e-40c9-a723-6e9aa168c90d'
     # print(str(uuid_test1))
