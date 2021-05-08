@@ -8,12 +8,12 @@ from subprocess import call
 import json
 import uuid
 import xlrd
-# from yaml_functions import *
-from ruamel.yaml import YAML
 
+from yaml_functions import *
+from cachemanagement import Cache
+import requests
 
 # ---------FUNCTIONS------------------
-
 
 def uuid_generation(n):
     list = []
@@ -22,139 +22,85 @@ def uuid_generation(n):
         list.append(str(u))
     return list
 
-
 def system_call(command):
     p = subprocess.Popen([command], stdout=subprocess.PIPE, shell=True)
     tmp = str(p.stdout.read()).replace('\\n', ' ')
-    return tmp[2: len(tmp) - 1]
-
+    return tmp[2: len(tmp) - 1] 
 
 def token_generation(email, pwd, url):
     auth_json = '{ "email" : "%s", "password" : "%s"}' % (email, pwd)
-    # curl -X POST -H 'Content-Type: application/json' --data '{'email': 'thomas.bottini@cnrs.fr', 'password' : '?Tr;_Q$D2W4#2!aG'}' http://bases-iremus.huma-num.fr/timbres/auth/login
     token_request = system_call(
         "curl -X POST -H 'Content-Type: application/json' --data '%s' %s/auth/login" % (auth_json, url))
-    return str(json.loads(token_request)['data']['refresh_token'])
+    return str(json.loads(token_request)['data']['access_token'])
 
+def begin_insertion(excel_path, mon_cache, sheet_names, url, token) :
 
-def listeAttribut(sheet, table_name):
-    a = []
-    for col in range(sheet.ncols):
-        a.append((sheet.cell(0, col).value.replace(' ', '_').replace(
-            '\'', '-').replace('é', 'e').replace('à', 'a')).lower())
-    return a
+    # ouvrir chaque feuille excel
+    # 1. on commence par ouvrir les tables dites 'simples' 
 
-
-# def insert_data_simple_table(excel_path, simple_table, url, token, id_uuid_files):
-
-#     # essai test pour les airs
-#     book = xlrd.open_workbook(excel_path)
-#     sheet = book.sheet_by_name(simple_table[0])
-
-#     airs_col = listeAttribut(sheet, simple_table[0])
-#     json_str = '['
-#     for row in range(1, sheet.nrows):
-#         json_str = ''.join([json_str, '{'])
-#         for col in range(sheet.ncols):
-#             if (sheet.cell(0, col).value == 'id'):
-#                 id_value = sheet.cell(row, col).value
-#                 uuid = update_uuid_yaml(
-#                     int(id_value), simple_table[0], id_uuid_files)
-#                 # print(uuid)
-#                 json_str = ''.join(
-#                     [json_str, '"%s" : "%s",' % (airs_col[col], uuid)])
-
-#                 # si le couple (id:uuid) existe déjà -> on le saute
-
-#             elif (isinstance(sheet.cell(row, col).value, str)):
-#                 json_str = ''.join([json_str, '"%s" : "%s",' % (
-#                     # cellules très modifiées
-#                     airs_col[col], str(sheet.cell(row, col).value.replace('"', '\'').replace("'", " ")))])
-#             else:
-#                 json_str = ''.join([json_str, '"%s" : "%s",' % (
-#                     airs_col[col], str(sheet.cell(row, col).value))])
-#             if (col == sheet.ncols-1):
-#                 json_str = json_str[:-1]
-#                 json_str = ''.join([json_str, '},'])
-#     json_str = json_str[:-1]
-#     json_str = ''.join([json_str, ']'])
-#     # print(json_str)
-#     insertion_airs = os.system(
-#         "curl -X POST -H 'Content-Type: application/json' --data '%s' %s/items/airs? access_token=%s" % (json_str, url, token))
-
-def insert_data_simple_table(excel_path, simple_table, url, token, id_uuid_files):
-
-    # essai test pour les airs
     book = xlrd.open_workbook(excel_path)
-    sheet = book.sheet_by_name(simple_table[0])
+    
+    airs_col = ['id', 'sources_musicales', 'air_normalise', 'surnom_1', 'surnom_2', 'surnom_3', 'surnom_4', 'surnom_5', 'surnom_6', 'surnom_7', 'surnom_8', 'surnom_9', 'surnom_10', 'surnom_11', 'surnom_12', 'surnom_13', 'surnom_14', 'enregistrement_air', 'notes_critiques_airs', 'sources_information_air']
+    editions_col = ['id', 'groupe_ouvrage', 'titre_ouvrage', 'auteur', 'nombre_pieces', 'ville_conservation_exemplaire_1', 'depot_conservation_exemplaire_1', 'prefixe_cote', 'numero_cote', 'annee_indiquee', 'annee_estimee', 'format', 'manuscrit_imprime', 'forme_editoriale', 'lieu_edition_indique', 'lieu_edition_reel', 'lieu_source_information', 'editeur_libraire_imprimeur']
 
-    airs_col = listeAttribut(sheet, simple_table[0])
+    for s in range(1) :
+        sheet = book.sheet_by_name(sheet_names[s])
+        nbr_post, nbr_patch = 0,0
 
-    for row in range(1, sheet.nrows):
-        json_str = '['
-        json_str = ''.join([json_str, '{'])
-        for col in range(sheet.ncols):
-            if (sheet.cell(0, col).value == 'id'):
-                id_value = sheet.cell(row, col).value
-                uuid = update_uuid_yaml(
-                    int(id_value), simple_table[0], id_uuid_files)
-                print(uuid)
-                # si l'id est déjà enregistrée, rien ne sera inséré
-                if (uuid[1] == 0):
-                    break
-                json_str = ''.join([json_str, '"%s" : "%s",' %
-                                    (airs_col[col], uuid[0])])
+        print('Traitement de la table : ' + sheet.name)
+        
+        if (sheet.name=='airs') :
+            col = airs_col
+            name_table = 'airs'
+        if (sheet.name=='éditions') :
+            col = editions_col
+            name_table = 'editions'
+        
+        for row in range(1, sheet.nrows): 
+            id_value = int(sheet.cell(row, 0).value)
+            mon_cache.get_uuid([name_table, id_value], True)
 
-            elif (isinstance(sheet.cell(row, col).value, str)):
-                json_str = ''.join([json_str, '"%s" : "%s",' % (
-                    # cellules très modifiées
-                    airs_col[col], str(sheet.cell(row, col).value.replace('"', '\'').replace("'", " ")))])
-            else:
-                json_str = ''.join([json_str, '"%s" : "%s",' % (
-                    airs_col[col], str(sheet.cell(row, col).value))])
-            if (col == sheet.ncols-1):
-                json_str = json_str[:-1]
-                json_str = ''.join([json_str, '}]'])
-        if (json_str!='[{') :
-            insertion_airs = os.system("curl -X POST -H 'Content-Type: application/json' --data '%s' %s/items/airs? access_token=%s" % (json_str, url, token))
+            # Mise à jour du cache 
+            current_uuid = mon_cache.get_uuid([name_table, str(id_value)])
+            get_object = requests.get(url+'/items/'+ name_table +'/'+current_uuid+'/?access_token=' + token)
+            get_object_json = json.loads(get_object.text)
 
+            # Construction du dict json
+            j_dict_str = '{'
+            for c in range(0,sheet.ncols) :
+                attr = (sheet.cell(0,c).value.replace(' ', '_').replace('\'', '-').replace('é', 'e').replace('à', 'a').replace('è', 'e')).lower() 
+                if (attr in col) : 
+                    if (attr == 'id') : 
+                        j_dict_str = ''.join([j_dict_str, '"%s" : "%s",' % (attr, current_uuid)])
+                    elif (isinstance(sheet.cell(row, c).value, str)):
+                        j_dict_str = ''.join([j_dict_str, '"%s" : "%s",' % (attr, str(sheet.cell(row, c).value.replace('"', '\'')))])
+                    else:
+                        j_dict_str = ''.join([j_dict_str, '"%s" : "%s",' % (attr, str(sheet.cell(row, c).value))])
+            j_dict_str = j_dict_str[:-1] + '}'
+    
+            item = json.loads(j_dict_str)
 
-def update_uuid_yaml(id_object, simple_table, id_uuid_files):
-
-    yaml = YAML(typ='rt')
-    yaml.preserve_quotes = True
-
-    # chargement du fichier
-    with open(id_uuid_files) as file:
-        data_yaml = yaml.load(file)
-
-    # on souhaite créer une nouvelle uuid à l'id si elle n'existe pas
-    # Objet retourné :
-    #   [uuid,0] : information déjà enregistrée
-    #   [uuid,1] : information non enregistrée
-
-        try:
-            data_yaml[simple_table][id_object]
-            print('ID : ' + id_object)
-            print(simple_table + ' : ' + str(id_object) + ' existe')
-            return([next(iter(data_yaml[simple_table][id_object].values())), 0])
-
-        except:
-            # l'id n'a pas été enregistrée, on lui créé une uuid et on rajoute le couple dans le .yml
-            print(simple_table + ' : ' +  str(id_object) + " n'existe pas")
-            new_uuid = uuid.uuid4()
-            new_line = {id_object: str(new_uuid)}
-            data_yaml[simple_table].append(new_line)
-            with open(id_uuid_files, 'w') as fo:
-                yaml.dump(data_yaml, fo)
-            return [new_uuid, 1]
-
+            if ('data' in get_object_json) :
+                # ligne déjà dans la base : méthode PATCH 
+                r = requests.patch(url+'/items/'+ name_table +'/'+ current_uuid +'?access_token=' + token, json=item)
+                # print(r.text)
+                nbr_patch += 1
+            else :
+                # ligne encore non-insérée dans la base : méthode POST
+                r = requests.post(url+'/items/'+ name_table +'/?access_token=' + token, json=item)
+                # print(r.text)
+                nbr_post += 1
+        
+        print(str(nbr_post) + ' lignes insérées dans la table ' + name_table)
+        print(str(nbr_patch) + ' lignes mises à jour dans la table ' + name_table)
 
 # ----------MAIN----------------------
+
 if __name__ == "__main__":
 
     email = 'thomas.bottini@cnrs.fr'
-    pwd = '?Tr;_Q$D2W4#2!aG'
+    # pwd = '?Tr;_Q$D2W4#2!aG'
+    pwd = '14a32e3e-bc5a-4c7d-83f6-6aea62baaab2'
     url = 'http://bases-iremus.huma-num.fr/timbres'
 
     token = token_generation(email, pwd, url)
@@ -166,13 +112,11 @@ if __name__ == "__main__":
     print("        ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾")
     print("Connexion à l'API de Directus | Token : " + token)
 
-    # mettre à jour les couples ID/UUID
-
     excel_path = 'structure_projet_timbres.xlsx'
     sheet_names = ['airs',
                    'éditions',
                    'textes_publiés',
-                   'références_externes',
+                   'références',
                    'thèmes',
                    'timbres',
                    'airs_références_externes',
@@ -181,21 +125,32 @@ if __name__ == "__main__":
                    'exemplaires_références_externes'
                    ]
 
-    id_uuid_files = 'uuid_data.yml'
+    mon_cache = Cache("fichier-cache.yaml")
+    begin_insertion(excel_path, mon_cache, sheet_names, url, token)
+    mon_cache.bye()
 
-    # insérer les données des tables dites "simples" (qui ne sont pas celles de jointures)
-    simple_table = sheet_names[:5]
 
-    insert_data_simple_table(excel_path, simple_table,
-                             url, token, id_uuid_files)
 
-    # insertion test theme
-    # uuid_test1 = '6bf6137e-239e-40c9-a723-6e9aa168c90d'
-    # print(str(uuid_test1))
+
+
+    # id_uuid_files = 'uuid_data.yml'
     # uuid_test2 = uuid.uuid4()
-    # print(uuid_test2)
-    # theme = '[{"id" : "%s", "theme" : "antoine", "type" : "patronyme"}, {"id" : "%s", "theme" : "simon", "type" : "patronyme"}]' % (
-    #     str(uuid_test1), str(uuid_test2))
-    # print(theme)
-    # insertion_theme = os.system(
-    #     "curl -X POST -H 'Content-Type: application/json' --data '%s' %s/items/themes? access_token=%s" % (theme, url, token))
+
+    # theme = {"id": str(uuid_test2), "theme": "Roi de France",
+    #          "type": "patronyme"}
+
+    # Exemples pour méthode POST (insertion)
+
+    # r = requests.post(url+'/items/themes?access_token=' + token, json=theme)
+
+    # Exemples pour méthode PATCH (uptdate)
+
+    # r = requests.patch(url+'/items/themes/'+str(uuid_test2)+'?access_token=' + token, json={"theme": "Reine de France"})
+
+    # Exemples pour méthode GET
+
+    # uuid_reine_de_france = "abfc2152-4311-4687-9c05-597bf24d850f"
+    # uuid_inexistante = "abfc2152-4311-4687-9c05-597bf24d850d"
+
+    # r = requests.get(url+'/items/themes/'+uuid_reine_de_france+'/?access_token=' + token)
+    # j = json.loads(r.text)
