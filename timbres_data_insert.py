@@ -49,7 +49,7 @@ def begin_insertion_simple_table(excel_path, mon_cache, sheet_names, url, token)
     references_externes_col = ['id', 'titre', 'annee', 'editeur', 'auteur', 'lien']
     themes_col = ['id', 'type', 'theme']
 
-    for s in range(4,5):
+    for s in range(len(sheet_names)):
         sheet = book.sheet_by_name(sheet_names[s])
         print('Traitement de la table : ' + sheet.name)
 
@@ -72,7 +72,7 @@ def begin_insertion_simple_table(excel_path, mon_cache, sheet_names, url, token)
         for row in range(1, sheet.nrows):
             id_value = int(sheet.cell(row, 0).value)
             mon_cache.get_uuid([name_table, id_value], True)
-
+            print(id_value  )
             # Mise à jour du cache
             current_uuid = mon_cache.get_uuid([name_table, str(id_value)])
             get_object = requests.get(
@@ -92,7 +92,7 @@ def begin_insertion_simple_table(excel_path, mon_cache, sheet_names, url, token)
                     elif (attr == 'edition' and name_table=='textes_publies') :
                         # cas particulier pour les textes publies : aller chercher l'uuid de l'exemplaire
                         j_dict_str = ''.join(
-                            [j_dict_str, '"%s" : "%s",' % (attr, mon_cache.get_uuid(['editions', sheet.cell(row, c).value]))])
+                            [j_dict_str, '"%s" : "%s",' % (attr, mon_cache.get_uuid(['editions', str(int(sheet.cell(row,c).value))]))])
                     elif (isinstance(sheet.cell(row, c).value, str)):
                         j_dict_str = ''.join([j_dict_str, '"%s" : "%s",' % (
                             attr, str(sheet.cell(row, c).value.replace('"', '\'').replace('\n', ' ')))])
@@ -112,6 +112,8 @@ def begin_insertion_simple_table(excel_path, mon_cache, sheet_names, url, token)
                 r = requests.post(url+'/items/' + name_table +
                                   '/?access_token=' + token, json=item)
                 # print(r.text)
+
+# def begin_insertion_joint_table(excel_path, mon_cache, sheet_names, url, token) : 
 
 
 # ----------MAIN----------------------
@@ -147,7 +149,9 @@ if __name__ == "__main__":
                    ]
 
     mon_cache = Cache("fichier-cache.yaml")
-    begin_insertion_simple_table(excel_path, mon_cache, sheet_names, url, token)
+
+    begin_insertion_simple_table(excel_path, mon_cache, sheet_names[:5], url, token)
+    # begin_insertion_joint_table(excel_path, mon_cache, sheet_names[5:], url, token)
     mon_cache.bye()
 
     # id_uuid_files = 'uuid_data.yml'
