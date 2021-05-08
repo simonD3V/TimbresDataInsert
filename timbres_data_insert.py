@@ -46,10 +46,11 @@ def begin_insertion_simple_table(excel_path, mon_cache, sheet_names, url, token)
                     'annee_indiquee', 'annee_estimee', 'format', 'manuscrit_imprime', 'forme_editoriale', 'lieu_edition_indique', 'lieu_edition_reel', 'lieu_source_information', 'editeur_libraire_imprimeur']
     textes_publies_col = ['id', 'edition', 'provenance',
                         'groupe_texte', 'titre', 'sur_l_air_de', 'auteur']
-    for s in range(3):
-        sheet = book.sheet_by_name(sheet_names[s])
-        nbr_post, nbr_patch = 0, 0
+    references_externes_col = ['id', 'titre', 'annee', 'editeur', 'auteur', 'lien']
+    themes_col = ['id', 'type', 'theme']
 
+    for s in range(4,5):
+        sheet = book.sheet_by_name(sheet_names[s])
         print('Traitement de la table : ' + sheet.name)
 
         if (sheet.name == 'airs'):
@@ -61,6 +62,12 @@ def begin_insertion_simple_table(excel_path, mon_cache, sheet_names, url, token)
         if (sheet.name == 'textes_publiés'):
             col = textes_publies_col
             name_table = 'textes_publies'
+        if (sheet.name == 'références_externes'):
+            col = references_externes_col
+            name_table = 'references_externes'
+        if (sheet.name == 'thèmes'):
+            col = themes_col
+            name_table = 'themes'
 
         for row in range(1, sheet.nrows):
             id_value = int(sheet.cell(row, 0).value)
@@ -100,16 +107,12 @@ def begin_insertion_simple_table(excel_path, mon_cache, sheet_names, url, token)
                 r = requests.patch(url+'/items/' + name_table + '/' +
                                    current_uuid + '?access_token=' + token, json=item)
                 # print(r.text)
-                nbr_patch += 1
             else:
                 # ligne encore non-insérée dans la base : méthode POST
                 r = requests.post(url+'/items/' + name_table +
                                   '/?access_token=' + token, json=item)
                 # print(r.text)
-                nbr_post += 1
 
-        print(str(nbr_post) + ' lignes insérées dans la table ' + name_table)
-        print(str(nbr_patch) + ' lignes mises à jour dans la table ' + name_table)
 
 # ----------MAIN----------------------
 
@@ -134,7 +137,7 @@ if __name__ == "__main__":
     sheet_names = ['airs',
                    'éditions',
                    'textes_publiés',
-                   'références',
+                   'références_externes',
                    'thèmes',
                    'timbres',
                    'airs_références_externes',
