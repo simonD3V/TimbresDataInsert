@@ -133,7 +133,6 @@ def begin_insertion_joint_table(excel_path, mon_cache, sheet_names, url, token):
         sheet = book.sheet_by_name(sheet_names[s])
         tab_uuid = uuid_generation(sheet.nrows)
         print('Traitement de la table : ' + sheet.name)
-        print('ATTENTION : Traitement non automatique (pas d\'enregistrement dans le cache)')
 
         if (sheet.name == 'timbres'):
             col = timbres_col
@@ -152,14 +151,23 @@ def begin_insertion_joint_table(excel_path, mon_cache, sheet_names, url, token):
             name_table = 'editions_references_externes'
 
         for row in range(1, sheet.nrows):
+            id_value = int(sheet.cell(row, 0).value)
+            mon_cache.get_uuid([name_table, id_value], True)
+            print(id_value)
+            
+            # Mise à jour du cache
+            current_uuid = mon_cache.get_uuid([name_table, str(int(id_value))])
+            get_object = requests.get(url+'/items/' + name_table + '/'+current_uuid+'/?access_token=' + token)
+            get_object_json = json.loads(get_object.text)
+
             # Construction du dict json
-            # j_dict_str = '{ "id" : "' + tab_uuid[row] + '",'
-            j_dict_str = '{ "id" : "' + str(row) + '",'
+            j_dict_str = '{'
             for c in range(0, sheet.ncols):
                 attr = (sheet.cell(0, c).value.replace(' ', '_').replace(
                     '\'', '-').replace('é', 'e').replace('à', 'a').replace('è', 'e')).lower()
-
-                if ('airs' in attr) :
+                if (attr == 'id'):
+                        j_dict_str = ''.join([j_dict_str, '"%s" : "%s",' % (attr, current_uuid)])
+                elif ('airs' in attr) :
                     # on cherche les uuid des airs
                     j_dict_str = ''.join([j_dict_str, '"%s" : "%s",' % (attr, mon_cache.get_uuid(['airs', str(int(sheet.cell(row, c).value))]))])                    
                 elif ('textes_publies' in attr) :
@@ -183,9 +191,18 @@ def begin_insertion_joint_table(excel_path, mon_cache, sheet_names, url, token):
                         attr, str(sheet.cell(row, c).value))])
             j_dict_str = j_dict_str[:-1] + '}'
             item = json.loads(j_dict_str)
-            print(j_dict_str)
-            r = requests.post(url+'/items/' + name_table +'/?access_token=' + token, json=item)
-            print(r.text)
+            # print(j_dict_str)
+
+            if ('data' in get_object_json):
+                # ligne déjà dans la base : méthode PATCH
+                r = requests.patch(url+'/items/' + name_table + '/' +
+                                   current_uuid + '?access_token=' + token, json=item)
+                # print(r.text)
+            else:
+                # ligne encore non-insérée dans la base : méthode POST
+                r = requests.post(url+'/items/' + name_table +
+                                  '/?access_token=' + token, json=item)
+                # print(r.text)
 
 # ----------MAIN----------------------
 
@@ -194,7 +211,7 @@ if __name__ == "__main__":
     email = 'thomas.bottini@cnrs.fr'
     # pwd = '?Tr;_Q$D2W4#2!aG'
     pwd = '14a32e3e-bc5a-4c7d-83f6-6aea62baaab2'
-    url = 'http://bases-iremus.huma-num.fr/timbres'
+    url = 'http://bases-iremus.huma-num.fr/directus-tcf'
 
     token = token_generation(email, pwd, url)
     print("        ________________________")
@@ -205,7 +222,7 @@ if __name__ == "__main__":
     print("        ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾")
     print("Connexion à l'API de Directus | Token : " + token)
 
-    excel_path = 'structure_projet_timbres.xlsx'
+    excel_path = 'structure_projet_timbres2.xlsx'
     sheet_names = ['airs',
                    'éditions',
                    'textes_publiés',
@@ -221,6 +238,5 @@ if __name__ == "__main__":
     mon_cache = Cache("fichier-cache.yaml")
 
     begin_insertion_simple_table(excel_path, mon_cache, sheet_names[:5], url, token)
-    # begin_insertion_joint_table(
-    #     excel_path, mon_cache, sheet_names[5:], url, token)
+    begin_insertion_joint_table(excel_path, mon_cache, sheet_names[5:], url, token)
     mon_cache.bye()
