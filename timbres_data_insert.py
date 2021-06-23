@@ -209,8 +209,7 @@ def begin_insertion_joint_table(excel_path, mon_cache, sheet_names, url, token):
 if __name__ == "__main__":
 
     email = 'thomas.bottini@cnrs.fr'
-    # pwd = '?Tr;_Q$D2W4#2!aG'
-    pwd = '14a32e3e-bc5a-4c7d-83f6-6aea62baaab2'
+    pwd = ''
     url = 'http://bases-iremus.huma-num.fr/directus-tcf'
 
     token = token_generation(email, pwd, url)
