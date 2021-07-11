@@ -49,7 +49,7 @@ def begin_insertion_simple_table(excel_path, mon_cache, sheet_names, url, token)
     editions_col = ['id', 'groupe_ouvrage', 'titre_ouvrage', 'auteur', 'nombre_pieces', 'ville_conservation_exemplaire_1', 'depot_conservation_exemplaire_1', 'prefixe_cote', 'numero_cote',
                     'annee_indiquee', 'annee_estimee', 'format', 'manuscrit_imprime', 'forme_editoriale', 'lieu_edition_indique', 'lieu_edition_reel', 'lieu_source_information', 'editeur_libraire_imprimeur']
     textes_publies_col = ['id', 'edition', 'provenance',
-                          'groupe_texte', 'titre', 'sur_l_air_de', 'auteur']
+                          'groupe_texte', 'titre', 'sur_l_air_de', 'auteur', 'forme_poetique', 'notes_forme_poetique']
     references_externes_col = ['id', 'titre',
                                'annee', 'editeur', 'auteur', 'lien']
     themes_col = ['id', 'type', 'theme']
@@ -209,7 +209,8 @@ def begin_insertion_joint_table(excel_path, mon_cache, sheet_names, url, token):
 if __name__ == "__main__":
 
     email = 'thomas.bottini@cnrs.fr'
-    pwd = ''
+    # pwd = '?Tr;_Q$D2W4#2!aG'
+    pwd = '14a32e3e-bc5a-4c7d-83f6-6aea62baaab2'
     url = 'http://bases-iremus.huma-num.fr/directus-tcf'
 
     token = token_generation(email, pwd, url)
