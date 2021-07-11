@@ -49,7 +49,7 @@ def begin_insertion_simple_table(excel_path, mon_cache, sheet_names, url, token)
     editions_col = ['id', 'groupe_ouvrage', 'titre_ouvrage', 'auteur', 'nombre_pieces', 'ville_conservation_exemplaire_1', 'depot_conservation_exemplaire_1', 'prefixe_cote', 'numero_cote',
                     'annee_indiquee', 'annee_estimee', 'format', 'manuscrit_imprime', 'forme_editoriale', 'lieu_edition_indique', 'lieu_edition_reel', 'lieu_source_information', 'editeur_libraire_imprimeur']
     textes_publies_col = ['id', 'edition', 'provenance',
-                          'groupe_texte', 'titre', 'sur_l_air_de', 'auteur', 'forme_poetique', 'notes_forme_poetique']
+                          'groupe_texte', 'titre', 'nature_texte', 'sur_l_air_de', 'incipit','incipit_normalise','deux_premiers_vers_premier_couplet','deux_premiers_vers_premier_couplet_normalises','refrain','refrain_normalise','variante','variante_normalise', 'auteur', 'auteur_statut_source','auteur_source_information','numero_d_ordre','page','lien_web_visualisation','contenu_analytique','contenu_texte','forme_poetique', 'notes_forme_poetique']
     references_externes_col = ['id', 'titre',
                                'annee', 'editeur', 'auteur', 'lien']
     themes_col = ['id', 'type', 'theme']
