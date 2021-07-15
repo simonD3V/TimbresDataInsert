@@ -8,13 +8,13 @@ Insertion des données timbres dans la base de données
 - [x] Reproduire le modèle de la base sur _Directus_
   * [Adresse de l'interface _Directus_](http://bases-iremus.huma-num.fr/timbres/admin/login)
   
-- [ ] _Normaliser_ les noms des champs de chaque table
+- [x] _Normaliser_ les noms des champs de chaque table
 
-- [ ] Mettre à jour [la feuille de calcul temporaire](https://docs.google.com/spreadsheets/d/1NA8yjzQz-Q-OSUN7rLpyAC3FK2KHK5r_/edit#gid=808619991)
+- [x] Mettre à jour [la feuille de calcul temporaire](https://docs.google.com/spreadsheets/d/1NA8yjzQz-Q-OSUN7rLpyAC3FK2KHK5r_/edit#gid=808619991)
 
-- [ ] Ecrire un script python permettant :
+- [x] Ecrire un script python permettant :
   * - [x] de générer un token d'identification et de se log sur le projet _Directus_ "Timbres";
   * - [x] d'insérer les données via l'API de Directus;
-  * - [ ] de sauvegarder l'id et l'uuid des nouvelles données insérées dans un document YAML.
+  * - [x] de sauvegarder l'id et l'uuid des nouvelles données insérées dans un document YAML.
 
 - Demander à Alice de normaliser les identifiants des airs (234 et *234, trois occurrences de 237, deux occurrences de 189…)
