@@ -46,10 +46,10 @@ def begin_insertion_simple_table(excel_path, mon_cache, sheet_names, url, token)
 
     airs_col = ['id', 'sources_musicales', 'air_normalise', 'surnom_1', 'surnom_2', 'surnom_3', 'surnom_4', 'surnom_5', 'surnom_6', 'surnom_7', 'surnom_8',
                 'surnom_9', 'surnom_10', 'surnom_11', 'surnom_12', 'surnom_13', 'surnom_14', 'enregistrement_air', 'notes_critiques_airs', 'sources_information_air']
-    editions_col = ['id', 'groupe_ouvrage', 'titre_ouvrage', 'auteur', 'nombre_pieces', 'ville_conservation_exemplaire_1', 'depot_conservation_exemplaire_1', 'prefixe_cote', 'numero_cote',
+    editions_col = ['id', 'groupe_ouvrage', 'titre_ouvrage', 'auteur', 'nombre_pieces', 'ville_conservation_exemplaire_1','ville_conservation_exemplaire_2','ville_conservation_exemplaire_3','ville_conservation_exemplaire_4', 'depot_conservation_exemplaire_1','depot_conservation_exemplaire_2','depot_conservation_exemplaire_3','depot_conservation_exemplaire_4', 'prefixe_cote', 'numero_cote',
                     'annee_indiquee', 'annee_estimee', 'format', 'manuscrit_imprime', 'forme_editoriale', 'lieu_edition_indique', 'lieu_edition_reel', 'lieu_source_information', 'editeur_libraire_imprimeur']
     textes_publies_col = ['id', 'edition', 'provenance',
-                          'groupe_texte', 'titre', 'nature_texte', 'sur_l_air_de', 'incipit','incipit_normalise','deux_premiers_vers_premier_couplet','deux_premiers_vers_premier_couplet_normalises','refrain','refrain_normalise','variante','variante_normalise', 'auteur', 'auteur_statut_source','auteur_source_information','numero_d_ordre','page','lien_web_visualisation','contenu_analytique','contenu_texte','forme_poetique', 'notes_forme_poetique']
+                          'groupe_texte', 'titre', 'nature_texte', 'sur_l_air_de', 'incipit', 'incipit_normalise', 'deux_premiers_vers_premier_couplet', 'deux_premiers_vers_premier_couplet_normalises', 'refrain', 'refrain_normalise', 'variante', 'variante_normalise', 'auteur', 'auteur_statut_source', 'auteur_source_information', 'numero_d_ordre', 'page', 'lien_web_visualisation', 'contenu_analytique', 'contenu_texte', 'forme_poetique', 'notes_forme_poetique']
     references_externes_col = ['id', 'titre',
                                'annee', 'editeur', 'auteur', 'lien']
     themes_col = ['id', 'type', 'theme']
@@ -123,11 +123,14 @@ def begin_insertion_joint_table(excel_path, mon_cache, sheet_names, url, token):
 
     book = xlrd.open_workbook(excel_path)
 
-    timbres_col = ['airs', 'textes_publies','enregistrement_web', 'enregistrement_sherlock']
+    timbres_col = ['airs', 'textes_publies',
+                   'enregistrement_web', 'enregistrement_sherlock']
     airs_references_externes_col = ['airs', 'references_externes']
     textes_publies_themes_col = ['textes_publies', 'themes']
-    textes_publies_references_exter_col = ['references_externes', 'textes_publies', 'description_reference']
-    editions_references_externes_col = ['editions', 'references_externes', 'description_reference']
+    textes_publies_references_exter_col = [
+        'references_externes', 'textes_publies', 'description_reference']
+    editions_references_externes_col = [
+        'editions', 'references_externes', 'description_reference']
 
     for s in range(len(sheet_names)):
         sheet = book.sheet_by_name(sheet_names[s])
@@ -154,10 +157,11 @@ def begin_insertion_joint_table(excel_path, mon_cache, sheet_names, url, token):
             id_value = int(sheet.cell(row, 0).value)
             mon_cache.get_uuid([name_table, id_value], True)
             print(id_value)
-            
+
             # Mise à jour du cache
             current_uuid = mon_cache.get_uuid([name_table, str(int(id_value))])
-            get_object = requests.get(url+'/items/' + name_table + '/'+current_uuid+'/?access_token=' + token)
+            get_object = requests.get(
+                url+'/items/' + name_table + '/'+current_uuid+'/?access_token=' + token)
             get_object_json = json.loads(get_object.text)
 
             # Construction du dict json
@@ -166,22 +170,28 @@ def begin_insertion_joint_table(excel_path, mon_cache, sheet_names, url, token):
                 attr = (sheet.cell(0, c).value.replace(' ', '_').replace(
                     '\'', '-').replace('é', 'e').replace('à', 'a').replace('è', 'e')).lower()
                 if (attr == 'id'):
-                        j_dict_str = ''.join([j_dict_str, '"%s" : "%s",' % (attr, current_uuid)])
-                elif ('airs' in attr) :
+                    j_dict_str = ''.join(
+                        [j_dict_str, '"%s" : "%s",' % (attr, current_uuid)])
+                elif ('airs' in attr):
                     # on cherche les uuid des airs
-                    j_dict_str = ''.join([j_dict_str, '"%s" : "%s",' % (attr, mon_cache.get_uuid(['airs', str(int(sheet.cell(row, c).value))]))])                    
-                elif ('textes_publies' in attr) :
+                    j_dict_str = ''.join([j_dict_str, '"%s" : "%s",' % (
+                        attr, mon_cache.get_uuid(['airs', str(int(sheet.cell(row, c).value))]))])
+                elif ('textes_publies' in attr):
                     # on cherche les uuid des textes
-                    j_dict_str = ''.join([j_dict_str, '"%s" : "%s",' % (attr, mon_cache.get_uuid(['textes_publies', str(int(sheet.cell(row, c).value))]))])
-                elif ('references_externes' in attr) :
+                    j_dict_str = ''.join([j_dict_str, '"%s" : "%s",' % (attr, mon_cache.get_uuid(
+                        ['textes_publies', str(int(sheet.cell(row, c).value))]))])
+                elif ('references_externes' in attr):
                     # on cherche les uuid des références
-                    j_dict_str = ''.join([j_dict_str, '"%s" : "%s",' % (attr, mon_cache.get_uuid(['references_externes', str(int(sheet.cell(row, c).value))]))])
-                elif ('editions' in attr) :
+                    j_dict_str = ''.join([j_dict_str, '"%s" : "%s",' % (attr, mon_cache.get_uuid(
+                        ['references_externes', str(int(sheet.cell(row, c).value))]))])
+                elif ('editions' in attr):
                     # on cherche les uuid des éditions
-                    j_dict_str = ''.join([j_dict_str, '"%s" : "%s",' % (attr, mon_cache.get_uuid(['editions', str(int(sheet.cell(row, c).value))]))])
-                elif ('themes' in attr) :
+                    j_dict_str = ''.join([j_dict_str, '"%s" : "%s",' % (
+                        attr, mon_cache.get_uuid(['editions', str(int(sheet.cell(row, c).value))]))])
+                elif ('themes' in attr):
                     # on cherche les uuid des thèmes
-                    j_dict_str = ''.join([j_dict_str, '"%s" : "%s",' % (attr, mon_cache.get_uuid(['themes', str(int(sheet.cell(row, c).value))]))])
+                    j_dict_str = ''.join([j_dict_str, '"%s" : "%s",' % (
+                        attr, mon_cache.get_uuid(['themes', str(int(sheet.cell(row, c).value))]))])
 
                 elif (isinstance(sheet.cell(row, c).value, str)):
                     j_dict_str = ''.join([j_dict_str, '"%s" : "%s",' % (
@@ -205,6 +215,7 @@ def begin_insertion_joint_table(excel_path, mon_cache, sheet_names, url, token):
                 # print(r.text)
 
 # ----------MAIN----------------------
+
 
 if __name__ == "__main__":
 
@@ -236,6 +247,8 @@ if __name__ == "__main__":
 
     mon_cache = Cache("fichier-cache.yaml")
 
-    begin_insertion_simple_table(excel_path, mon_cache, sheet_names[:5], url, token)
-    begin_insertion_joint_table(excel_path, mon_cache, sheet_names[5:], url, token)
+    begin_insertion_simple_table(
+        excel_path, mon_cache, sheet_names[:5], url, token)
+    begin_insertion_joint_table(
+        excel_path, mon_cache, sheet_names[5:], url, token)
     mon_cache.bye()
