@@ -47,7 +47,7 @@ def begin_insertion_simple_table(excel_path, mon_cache, sheet_names, url, token)
     airs_col = ['id', 'sources_musicales', 'air_normalise', 'surnom_1', 'surnom_2', 'surnom_3', 'surnom_4', 'surnom_5', 'surnom_6', 'surnom_7', 'surnom_8',
                 'surnom_9', 'surnom_10', 'surnom_11', 'surnom_12', 'surnom_13', 'surnom_14', 'enregistrement_air', 'notes_critiques_airs', 'sources_information_air']
     editions_col = ['id', 'groupe_ouvrage', 'titre_ouvrage', 'auteur', 'nombre_pieces', 'ville_conservation_exemplaire_1','ville_conservation_exemplaire_2','ville_conservation_exemplaire_3','ville_conservation_exemplaire_4', 'depot_conservation_exemplaire_1','depot_conservation_exemplaire_2','depot_conservation_exemplaire_3','depot_conservation_exemplaire_4', 'prefixe_cote', 'numero_cote',
-                    'annee_indiquee', 'annee_estimee', 'format', 'manuscrit_imprime', 'forme_editoriale', 'lieu_edition_indique', 'lieu_edition_reel', 'lieu_source_information', 'editeur_libraire_imprimeur']
+                    'annee_indiquee', 'annee_estimee', 'format', 'manuscrit_imprime', 'forme_editoriale', 'lieu_edition_indique', 'lieu_edition_reel', 'lieu_source_information', 'editeur_libraire_imprimeur','editeur','libraire','imprimeur','religion', 'notes_provenance', 'editions_modernes']
     textes_publies_col = ['id', 'edition', 'provenance',
                           'groupe_texte', 'titre', 'nature_texte', 'sur_l_air_de', 'incipit', 'incipit_normalise', 'deux_premiers_vers_premier_couplet', 'deux_premiers_vers_premier_couplet_normalises', 'refrain', 'refrain_normalise', 'variante', 'variante_normalise', 'auteur', 'auteur_statut_source', 'auteur_source_information', 'numero_d_ordre', 'page', 'lien_web_visualisation', 'contenu_analytique', 'contenu_texte', 'forme_poetique', 'notes_forme_poetique']
     references_externes_col = ['id', 'titre',
@@ -232,7 +232,7 @@ if __name__ == "__main__":
     print("        ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾")
     print("Connexion à l'API de Directus | Token : " + token)
 
-    excel_path = 'structure_projet_timbres2.xlsx'
+    excel_path = 'structure_projet_timbres.xlsx'
     sheet_names = ['airs',
                    'éditions',
                    'textes_publiés',
